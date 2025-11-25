@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<div class="container my-5">
+    {% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+    <h2 class="mb-4 text-center fw-bold">⚡ Fast Add Product</h2>
+
+    <form action="" method="POST" enctype="multipart/form-data" id="fastAddForm">
+        {% csrf_token %}
+
+        <!-- Product Info -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white fw-bold">Product Information</div>
+            <div class="card-body">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Product Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="T-Shirt Classic Fit" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select name="category" class="form-select" required>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Buying Price</label>
+                        <input type="number" name="bought_price" step="0.01" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Selling Price</label>
+                        <input type="number" name="selling_price" step="0.01" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Discount (%)</label>
+                        <input type="number" name="discount" step="0.01" class="form-control">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Variants Section -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
+                Product Variants
+                <button type="button" class="btn btn-success btn-sm" id="addVariantBtn">
+                    ➕ Add Variant
+                </button>
+            </div>
+
+            <div class="card-body">
+
+                <table class="table table-bordered text-center" id="variantTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Initial Qty</th>
+                            <th>Current Qty</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- JS will generate rows -->
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <!-- Images -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white fw-bold">Product Images</div>
+            <div class="card-body">
+
+                <input type="file" name="images" multiple class="form-control" id="imageInput">
+
+                <div class="row mt-3" id="imagePreview">
+                    <!-- Image preview thumbnails will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 fw-bold">💾 Save Product</button>
+
+    </form>
+</div>
+
+
+<script>
+    // ------------------------
+    // Variant Add/Remove
+    // ------------------------
+    document.getElementById("addVariantBtn").addEventListener("click", () => {
+        const table = document.querySelector("#variantTable tbody");
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td><input type="text" name="variant_size[]" class="form-control" placeholder="M / 12"></td>
+            <td><input type="text" name="variant_color[]" class="form-control" placeholder="Black"></td>
+            <td><input type="number" name="variant_initial_qty[]" class="form-control"></td>
+            <td><input type="number" name="variant_current_qty[]" class="form-control"></td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm removeVariant">🗑️</button>
+            </td>
+        `;
+
+        table.appendChild(row);
+    });
+
+    document.addEventListener("click", e => {
+        if (e.target.classList.contains("removeVariant")) {
+            e.target.closest("tr").remove();
+        }
+    });
+
+    // ------------------------
+    // Image Preview
+    // ------------------------
+    document.getElementById("imageInput").addEventListener("change", function () {
+        const preview = document.getElementById("imagePreview");
+        preview.innerHTML = "";
+
+        [...this.files].forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const col = document.createElement("div");
+                col.classList.add("col-md-3", "mb-3");
+                col.innerHTML = `
+                    <img src="${e.target.result}" class="img-fluid rounded shadow-sm">
+                `;
+                preview.appendChild(col);
+            }
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+
+{% endblock %}

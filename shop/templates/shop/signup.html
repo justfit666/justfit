@@ -1,0 +1,88 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up | JustFit</title>
+    <link rel="stylesheet" href="{% static 'shop/styles.css' %}">
+    <style>
+        body {
+            background: #f2f4f7;
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            margin-top: 80px;
+        }
+        .signup-box {
+            width: 350px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px #0002;
+        }
+        .signup-box h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            border: 1px solid #bbb;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: #28a745;
+            border: none;
+            color: white;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1f8a36;
+        }
+        .msg {
+            margin-top: 10px;
+            color: red;
+            text-align: center;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="signup-box">
+    <h2>Create Account</h2>
+
+    {% for message in messages %}
+        <div class="msg">{{ message }}</div>
+    {% endfor %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <input type="text" name="username" placeholder="Choose a username" required>
+
+        <input type="password" name="password" placeholder="Create a password" required>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="login-link">
+        Already have an account?  
+        <a href="{% url 'shop:login' %}">Login here</a>.
+    </div>
+
+</div>
+
+</body>
+</html>

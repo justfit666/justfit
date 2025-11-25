@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 30px auto;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="font-size: 26px; font-weight: 600;">📘 Expense List</h2>
+        <a href="{% url 'shop:add_expense' %}"
+           style="background:#222; color:white; padding:10px 15px; border-radius:8px; text-decoration:none; font-weight:600;">
+            ➕ Add Expense
+        </a>
+    </div>
+
+    <div style="background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f5f5f5; text-align:left;">
+                    <th style="padding:12px;">Date</th>
+                    <th style="padding:12px;">Amount</th>
+                    <th style="padding:12px;">Comment</th>
+                    <th style="padding:12px;">Source</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for e in expenses %}
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:12px;">{{ e.date }}</td>
+                    <td style="padding:12px; font-weight:600;">{{ e.amount }} EGP</td>
+                    <td style="padding:12px;">{{ e.comment|default:"-" }}</td>
+                    <td style="padding:12px;">{{ e.myMoney }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="padding:20px; text-align:center; color:#888;">
+                        No expenses yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

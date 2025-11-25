@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: auto;">
+
+    <!-- =======================
+         TABLE 1: USER SUMMARY 
+    ======================== -->
+    <h2 style="margin-bottom: 15px; font-size: 22px; color:#222;">📊 Summary by User</h2>
+
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 40px;">
+        <thead>
+            <tr style="background:#222; color:white;">
+                <th style="padding:10px;">User</th>
+                <th style="padding:10px;">Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in user_totals %}
+            <tr style="border-bottom:1px solid #ddd;">
+                <td style="padding:10px; font-weight:600;">{{ row.user__username }}</td>
+                <td style="padding:10px;">{{ row.total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <!-- =======================
+         TABLE 2: FULL EXPENSE LIST 
+    ======================== -->
+    <h2 style="margin-bottom: 15px; font-size: 22px; color:#222;">📄 All Expenses (Excluding Justfit)</h2>
+
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background:#444; color:white;">
+                <th style="padding:10px;">User</th>
+                <th style="padding:10px;">Date</th>
+                <th style="padding:10px;">Amount</th>
+                <th style="padding:10px;">Type</th>
+                <th style="padding:10px;">Comment</th>
+                <th style="padding:10px;">Change User</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for e in expenses %}
+            <tr style="border-bottom:1px solid #ddd; background:#fafafa;">
+                <td style="padding:10px; font-weight:600;">{{ e.user.username }}</td>
+                <td style="padding:10px;">{{ e.date }}</td>
+                <td style="padding:10px;">{{ e.amount }}</td>
+                <td style="padding:10px;">{{ e.type }}</td>
+                <td style="padding:10px;">{{ e.comment }}</td>
+
+                <!-- Change User -->
+                <td style="padding:10px;">
+
+                    <form method="POST" action="{% url 'shop:update_expense_user' e.id %}"
+                          onsubmit="return confirm('Are you sure you want to change the user for this record?');">
+                        {% csrf_token %}
+
+                        <select name="user"
+                                style="padding:5px; border-radius:5px; border:1px solid #ccc;">
+                            {% for u in admin_users %}
+                                <option value="{{ u.id }}"
+                                        {% if u.id == e.user.id %}selected{% endif %}>
+                                    {{ u.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <button type="submit"
+                                style="padding:5px 10px; margin-left:5px; background:#222; color:white; border:none; border-radius:5px; cursor:pointer;">
+                            Save
+                        </button>
+                    </form>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

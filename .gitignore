@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# env
+.venv/
+env/
+venv/
+*.env
+
+# SQLite DB
+db.sqlite3
+
+# media uploads
+/media
+/media/*
+
+# staticfiles
+/staticfiles

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+
+    <h2 style="font-size: 24px; margin-bottom: 20px; font-weight: 600; color: #333;">
+        ➕ Add Expense
+    </h2>
+
+    <form method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+        {% csrf_token %}
+
+<!-- Admin User -->
+<div>
+    <label style="font-weight: 600; color: #555;">User (Admin Only)</label>
+
+    <select name="user"
+            style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+
+        {% for u in admin_users %}
+            <option value="{{ u.id }}"
+                {% if u.username == "Justfit" %}selected{% endif %} >
+
+                {# Colored Icons Per User #}
+                {% if u.username == "Justfit" %}
+                    🟢 {{ u.username }}
+                {% elif u.username == "medhat" %}
+                    🔵 {{ u.username }}
+                {% elif u.username == "kilany" %}
+                    🟣 {{ u.username }}
+                {% else %}
+                    🟠 {{ u.username }}
+                {% endif %}
+            </option>
+        {% endfor %}
+
+    </select>
+</div>
+
+
+        <!-- Amount -->
+        <div>
+            <label style="font-weight: 600; color: #555;">Amount</label>
+            <input type="number" step="0.01" name="amount" required
+                   style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;">
+        </div>
+
+        <!-- Type -->
+        <div>
+            <label style="font-weight: 600; color: #555;">Type</label>
+            <select name="type"
+                    style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px;">
+        
+                <!-- Pay Money options -->
+                <option value="Product">🔻 Product</option>
+                <option value="Extra offer">🔻 Extra offer</option>
+                <option value="Ads">🔻 Ads</option>
+                <option value="Other">🔻 Other</option>
+        
+                <!-- Get Money option -->
+                <option value="Extra gain">🟢💰 Extra gain</option>
+        
+            </select>
+        </div>
+        
+
+        <!-- Comment -->
+        <div>
+            <label style="font-weight: 600; color: #555;">Comment</label>
+            <textarea name="comment" rows="3"
+                      style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px;"></textarea>
+        </div>
+
+
+        <!-- Submit button -->
+        <button type="submit"
+                style="background:#222; color:white; padding:12px; border-radius:8px; font-weight:600; cursor:pointer;">
+            Save Expense
+        </button>
+
+    </form>
+
+</div>
+{% endblock %}

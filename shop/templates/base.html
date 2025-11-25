@@ -1,0 +1,165 @@
+{% load static %}
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JustFit</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{% static 'shop/styles.css' %}">
+  
+  <style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f4f7;
+    }
+
+    header {
+        background: #1f2937; /* Dark grey-blue */
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        flex-wrap: wrap;
+    }
+
+    .logo {
+        font-size: 22px;
+        font-weight: bold;
+        color: #fff;
+        text-decoration: none;
+        margin-right: 15px;
+    }
+
+    nav {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    nav a {
+        color: #e5e7eb;
+        text-decoration: none;
+        font-size: 15px;
+        padding: 7px 12px;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+    nav a:hover {
+        background: #374151;
+        color: white;
+    }
+
+    /* Dropdown */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropbtn {
+        background: #374151;
+        color: white;
+        padding: 7px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        user-select: none;
+    }
+    .dropbtn:hover {
+        background: #4b5563;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #1f2937;
+        min-width: 180px;
+        border-radius: 8px;
+        box-shadow: 0px 6px 12px rgba(0,0,0,0.15);
+        z-index: 10;
+        overflow: hidden;
+    }
+
+    .dropdown-content a {
+        display: block;
+        padding: 10px 14px;
+        color: #e5e7eb;
+    }
+    .dropdown-content a:hover {
+        background-color: #374151;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    main {
+        padding: 25px;
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        nav {
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="nav-left">
+    <a class="logo" href="{% url 'shop:products_view' %}">🏪 JustFit</a>
+
+    {% if user.is_authenticated %}
+        <nav>
+            <a href="{% url 'shop:product_list' %}">🛍️ Products</a>
+            <a href="{% url 'shop:expense_list' %}">💸 Expenses</a>
+
+            <!-- Tools dropdown for staff -->
+            {% if user.is_staff %}
+                <div class="dropdown">
+                    <div class="dropbtn">🧰 Tools ▾</div>
+                    <div class="dropdown-content">
+                        <a href="{% url 'shop:fast_add_product' %}">⚡ Fast Add</a>
+                        <a href="{% url 'shop:product_table' %}">📦 Inventory</a>
+                        <a href="{% url 'shop:balance' %}">💰 Balance</a>
+                        <a href="{% url 'shop:add_expense' %}">➕ Add Expense</a>
+                        <a href="{% url 'shop:profit_report' %}">📊 Profit</a>
+                    </div>
+                </div>
+            {% endif %}
+        </nav>
+    {% endif %}
+  </div>
+
+  <nav class="nav-right">
+      {% if user.is_authenticated %}
+          <a href="{% url 'shop:logout' %}">🚪 Logout</a>
+      {% else %}
+          <a href="{% url 'shop:login' %}">🔑 Login</a>
+          <a href="{% url 'shop:signup' %}">🆕 Sign Up</a>
+      {% endif %}
+  </nav>
+
+</header>
+
+<main>
+  {% block content %}
+  {% endblock %}
+</main>
+
+</body>
+</html>
