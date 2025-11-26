@@ -67,15 +67,18 @@ class ProductVariant(models.Model):
     color = models.CharField(max_length=50)
     quantity = models.PositiveIntegerField(default=0)
     availability_count = models.PositiveIntegerField(default=0)
+    in_delivery = models.PositiveIntegerField(default=0)  # NEW FIELD
 
     def save(self, *args, **kwargs):
         # Only set availability_count on FIRST creation
         if self.pk is None:
             self.availability_count = self.quantity
+            # in_delivery defaults to 0 automatically
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.product.name} - {self.size} - {self.color}"
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, related_name='images', on_delete=models.CASCADE)
@@ -161,6 +164,28 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.user} | {self.amount} | {self.type} | {self.date}"
+
+    class Meta:
+        ordering = ['-date']
+
+class Credit(models.Model):
+
+    # Only admin users (is_staff=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        limit_choices_to={'is_staff': True},
+        related_name="credits"
+    )
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    comment = models.TextField(blank=True, null=True)
+
+    date = models.DateField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user} | {self.amount} | {self.date}"
 
     class Meta:
         ordering = ['-date']

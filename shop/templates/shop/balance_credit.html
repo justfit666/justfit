@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="max-width: 1000px; margin: auto;">
+
+    <!-- ===========================
+         SUMMARY TABLE
+    ============================ -->
+    <h2 style="margin-bottom: 15px; font-size: 22px; color:#222;">
+        💰 Credit Summary by User
+    </h2>
+
+    <table style="width:100%; border-collapse: collapse; margin-bottom: 40px;">
+        <thead>
+            <tr style="background:#222; color:white;">
+                <th style="padding:10px;">User</th>
+                <th style="padding:10px;">Total Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in credit_totals %}
+            <tr style="border-bottom:1px solid #ddd;">
+                <td style="padding:10px; font-weight:600;">{{ row.user__username }}</td>
+                <td style="padding:10px;">{{ row.total }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" style="padding:20px; text-align:center;">No data</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <!-- ===========================
+         FULL CREDIT LIST
+    ============================ -->
+    <h2 style="margin-bottom: 15px; font-size: 22px; color:#222;">
+        📄 All Credit Transactions
+    </h2>
+
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background:#444; color:white;">
+                <th style="padding:10px;">User</th>
+                <th style="padding:10px;">Date</th>
+                <th style="padding:10px;">Amount</th>
+                <th style="padding:10px;">Comment</th>
+                <th style="padding:10px;">Change User</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for c in credits %}
+            <tr style="border-bottom:1px solid #ddd; background:#fafafa;">
+                <td style="padding:10px; font-weight:600;">{{ c.user.username }}</td>
+                <td style="padding:10px;">{{ c.date }}</td>
+                <td style="padding:10px;">{{ c.amount }}</td>
+                <td style="padding:10px;">{{ c.comment }}</td>
+            
+                <!-- Change User -->
+                <td style="padding:10px;">
+                    <form method="POST" action="{% url 'shop:update_credit_user' c.id %}">
+                        {% csrf_token %}
+                        <select name="user">
+                            {% for admin in admin_users %}
+                                <option value="{{ admin.id }}" {% if c.user.id == admin.id %}selected{% endif %}>
+                                    {{ admin.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

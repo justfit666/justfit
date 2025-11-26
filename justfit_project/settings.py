@@ -7,8 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY: replace for production
 SECRET_KEY = 'replace-this-with-a-secure-secret-for-prod'
-DEBUG = False
-ALLOWED_HOSTS = ['Justfit.pythonanywhere.com']
+DEBUG = True
+ALLOWED_HOSTS = ['Justfit.pythonanywhere.com',
+                 '127.0.0.1']
 
 
 # Apps

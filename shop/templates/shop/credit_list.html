@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="max-width:900px; margin:auto;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>Credit List</h2>
+
+        <a href="{% url 'shop:add_credit' %}"
+           style="background:#222; color:white; padding:10px 15px; border-radius:8px; text-decoration:none;">
+           ➕ Add Credit
+        </a>
+    </div>
+
+    <table style="width:100%; border-collapse:collapse;">
+        <thead style="background:#eee;">
+            <tr>
+                <th style="padding:10px;">Date</th>
+                <th style="padding:10px;">Amount</th>
+                <th style="padding:10px;">Comment</th>
+                <th style="padding:10px;">User</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in credits %}
+                <tr style="border-bottom:1px solid #ddd;">
+                    <td style="padding:10px;">{{ c.date }}</td>
+                    <td style="padding:10px;">{{ c.amount }}</td>
+                    <td style="padding:10px;">{{ c.comment|default:"-" }}</td>
+                    <td style="padding:10px;">{{ c.user.username }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

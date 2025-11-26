@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Product, ProductVariant, ProductImage, SizeType, Category, SubCategory,Favorite,CartItem
+from .models import Product, ProductVariant, ProductImage, SizeType, Category, SubCategory,Favorite,CartItem,Credit
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -102,17 +102,21 @@ def product_table(request):
 
     # --- 📦 AVAILABILITY FILTER ---
     availability = request.GET.get("availability")
-
     if availability == "in_stock":
         products = products.filter(variants__availability_count__gt=0).distinct()
-
     elif availability == "out_of_stock":
         products = products.filter(variants__availability_count=0).distinct()
 
-    # Range filter (optional)
+    # --- 🚚 IN DELIVERY FILTER ---
+    in_delivery_filter = request.GET.get("in_delivery")
+    if in_delivery_filter == "yes":
+        products = products.filter(variants__in_delivery__gt=0).distinct()
+    elif in_delivery_filter == "no":
+        products = products.filter(variants__in_delivery=0).distinct()
+
+    # --- RANGE FILTER ---
     min_qty = request.GET.get("min_qty")
     max_qty = request.GET.get("max_qty")
-
     if min_qty:
         products = products.filter(variants__availability_count__gte=min_qty).distinct()
     if max_qty:
@@ -129,31 +133,26 @@ def product_table(request):
     elif sort == "name_za":
         products = products.order_by("-name")
 
-    # Distinct color/size values from all variants
+    # Distinct values
     all_colors = ProductVariant.objects.values_list("color", flat=True).distinct()
     all_sizes = ProductVariant.objects.values_list("size", flat=True).distinct()
-
     categories = Category.objects.all()
 
     return render(request, 'shop/product_table.html', {
         'products': products,
         'categories': categories,
-
         'colors': all_colors,
         'sizes': all_sizes,
-
         'selected_colors': colors,
         'selected_sizes': sizes,
-
         'search': search,
         'selected_category': category_id,
         'sort': sort,
-
         'availability': availability,
         'min_qty': min_qty,
         'max_qty': max_qty,
+        'in_delivery_filter': in_delivery_filter,  # NEW
     })
-
 
 # @admin_required
 # def product_table(request):
@@ -169,15 +168,34 @@ def product_table(request):
 #     if category_id:
 #         products = products.filter(category_id=category_id)
 
-#     # --- 🎨 COLOR FILTER ---
-#     color = request.GET.get("color")
-#     if color:
-#         products = products.filter(variants__color=color).distinct()
+#     # --- 🎨 MULTI-COLOR FILTER ---
+#     colors = request.GET.getlist("color")
+#     if colors:
+#         products = products.filter(variants__color__in=colors).distinct()
 
-#     # --- 📏 SIZE FILTER ---
-#     size = request.GET.get("size")
-#     if size:
-#         products = products.filter(variants__size=size).distinct()
+#     # --- 📏 MULTI-SIZE FILTER ---
+#     sizes = request.GET.getlist("size")
+#     if sizes:
+#         products = products.filter(variants__size__in=sizes).distinct()
+
+#     # --- 📦 AVAILABILITY FILTER ---
+#     availability = request.GET.get("availability")
+    
+
+#     if availability == "in_stock":
+#         products = products.filter(variants__availability_count__gt=0).distinct()
+
+#     elif availability == "out_of_stock":
+#         products = products.filter(variants__availability_count=0).distinct()
+
+#     # Range filter (optional)
+#     min_qty = request.GET.get("min_qty")
+#     max_qty = request.GET.get("max_qty")
+
+#     if min_qty:
+#         products = products.filter(variants__availability_count__gte=min_qty).distinct()
+#     if max_qty:
+#         products = products.filter(variants__availability_count__lte=max_qty).distinct()
 
 #     # --- 🔃 SORT ---
 #     sort = request.GET.get("sort")
@@ -190,36 +208,48 @@ def product_table(request):
 #     elif sort == "name_za":
 #         products = products.order_by("-name")
 
-#     # Distinct available colors & sizes from all variants
-#     colors = ProductVariant.objects.values_list("color", flat=True).distinct()
-#     sizes = ProductVariant.objects.values_list("size", flat=True).distinct()
+#     # Distinct color/size values from all variants
+#     all_colors = ProductVariant.objects.values_list("color", flat=True).distinct()
+#     all_sizes = ProductVariant.objects.values_list("size", flat=True).distinct()
 
 #     categories = Category.objects.all()
 
 #     return render(request, 'shop/product_table.html', {
 #         'products': products,
 #         'categories': categories,
-#         'colors': colors,
-#         'sizes': sizes,
+
+#         'colors': all_colors,
+#         'sizes': all_sizes,
+
+#         'selected_colors': colors,
+#         'selected_sizes': sizes,
+
 #         'search': search,
 #         'selected_category': category_id,
-#         'selected_color': color,
-#         'selected_size': size,
 #         'sort': sort,
-#     })
 
+#         'availability': availability,
+#         'min_qty': min_qty,
+#         'max_qty': max_qty,
+#     })
 
 
 @require_POST
 def update_variant_field(request, variant_id):
     """
-    Update a single variant field (quantity or availability_count).
+    Update a single variant field:
+    - quantity
+    - availability_count
+    - in_delivery
     Returns JSON: { success: bool, message: str }
     """
+
     field = request.POST.get("field")
     value = request.POST.get("value")
 
-    allowed = {"quantity", "availability_count"}
+    # Add in_delivery to allowed fields
+    allowed = {"quantity", "availability_count", "in_delivery"}
+    
     if field not in allowed:
         return JsonResponse({"success": False, "message": "Invalid field."}, status=400)
 
@@ -229,20 +259,23 @@ def update_variant_field(request, variant_id):
         return JsonResponse({"success": False, "message": "Variant not found."}, status=404)
 
     try:
-        # Validate integer non-negative
+        # All 3 fields must be positive integers
         ivalue = int(value)
         if ivalue < 0:
             return JsonResponse({"success": False, "message": "Value must be zero or positive."}, status=400)
 
+        # Update the field
         setattr(variant, field, ivalue)
         variant.save()
+
         return JsonResponse({"success": True, "message": "Saved successfully."})
+
     except ValueError:
         return JsonResponse({"success": False, "message": "Please enter a valid integer."}, status=400)
+
     except Exception as e:
-        # Log exception server-side if you have logging
         return JsonResponse({"success": False, "message": f"Server error: {str(e)}"}, status=500)
-##############################33
+
 ###############################
 @admin_required
 def fast_add_product(request):
@@ -333,33 +366,7 @@ def variant_lookup(request):
     
 
 def products_view(request):
-
     return render(request, "shop/products_view.html", {"":""})
-
-
-# def product_detail(request, pk):
-#     product = get_object_or_404(Product, pk=pk)
-#     variants = product.variants.all()
-
-#     sizes = sorted(set(v.size for v in variants))
-#     colors = sorted(set(v.color for v in variants))
-
-#     availability = {}
-#     for v in variants:
-#         key = f"{v.size}|{v.color}"
-#         availability[key] = {
-#             "id": v.id,
-#             "available": v.availability_count > 0
-#         }
-
-#     return render(request, "shop/product_detail.html", {
-#         "product": product,
-#         "sizes": sizes,
-#         "colors": colors,
-#         "availability": availability,
-#     })
-
-
 
 
 
@@ -369,12 +376,6 @@ User = get_user_model()
 
 
 
-
-
-# def product_detail(request, pk):
-#     product = get_object_or_404(Product, pk=pk)
-#     variants = product.variants.all()
-#     return render(request, "shop/product_detail.html", {"product": product, "variants": variants})
 
 
 def product_detail(request, product_id):
@@ -413,31 +414,6 @@ def product_detail(request, product_id):
         "is_favorite": is_favorite,
         "in_cart": in_cart,
     })
-
-# def product_detail(request, product_id):
-
-#     product = get_object_or_404(Product, id=product_id)
-
-#     # Selected variant (default = first)
-#     selected_variant = product.variants.first()
-
-#     # Favorite products
-#     favorite_ids = set(Favorite.objects.filter(user=request.user)
-#                        .values_list("product_id", flat=True)) if request.user.is_authenticated else set()
-
-#     # Cart items
-#     cart_variant_ids = set()
-#     if request.user.is_authenticated:
-#         cart_variant_ids = set(CartItem.objects
-#                                .filter(user=request.user)
-#                                .values_list("variant_id", flat=True))
-
-#     return render(request, "shop/product_detail.html", {
-#         "product": product,
-#         "selected_variant": selected_variant,
-#         "favorite_ids": favorite_ids,
-#         "cart_variant_ids": cart_variant_ids,
-#     })
 
 def product_list(request):
     products = Product.objects.all()
@@ -551,7 +527,7 @@ def profit_report(request):
 
     # 1. Profit from sold products
     product_profit = ProductVariant.objects.annotate(
-        sold_units=F("quantity") - F("availability_count"),
+        sold_units=F("quantity") - F("availability_count")-F("in_delivery"),
         revenue=ExpressionWrapper(
             F("sold_units") * (F("product__selling_price") - F("product__purchase_price") - 20),
             output_field=DecimalField(max_digits=12, decimal_places=2)
@@ -618,40 +594,60 @@ def update_expense_user(request, pk):
     return redirect("shop:balance")
 
 
-# @staff_member_required
-# def profit_report(request):
 
-#     print("\n========== DEBUG MODE ==========\n")
+@login_required
+def add_credit(request):
+    admin_users = User.objects.filter(is_staff=True)
 
-#     # 1) Print all product variants
-#     variants = ProductVariant.objects.all()
-#     print("Total variants:", variants.count())
+    if request.method == "POST":
+        amount = request.POST.get("amount")
+        comment = request.POST.get("comment")
+        user_id = request.POST.get("user")
 
-#     for v in variants:
-#         print(f"Variant ID: {v.id}, quantity={v.quantity}, availability={v.availability_count}")
+        Credit.objects.create(
+            user_id=user_id,
+            amount=amount,
+            comment=comment
+        )
 
-#     # 2) Annotate and print calculations per row
-#     annotated = ProductVariant.objects.annotate(
-#         sold_units=F("quantity") - F("availability_count"),
-#         revenue=ExpressionWrapper(
-#             F("sold_units") * F("product__selling_price"),
-#             output_field=DecimalField(max_digits=12, decimal_places=2)
-#         )
-#     )
+        return redirect("shop:credit_list")
 
-#     print("\n--- Calculated values per variant ---")
-#     for item in annotated:
-#         print(
-#             f"ID {item.id}: sold_units={item.sold_units}, "
-#             f"price={item.product.selling_price}, revenue={item.revenue}"
-#         )
+    return render(request, "shop/add_credit.html", {
+        "admin_users": admin_users
+    })
 
-#     # 3) Print aggregated profit
-#     profit = annotated.aggregate(
-#         total_profit=Sum("revenue")
-#     )["total_profit"] or 0
+def credit_list(request):
+    credits = Credit.objects.all().order_by("-date")
+    return render(request, "shop/credit_list.html", {"credits": credits})
 
-#     print("\nComputed TOTAL PROFIT =", profit)
-#     print("\n====================================\n")
 
-#     return render(request, "shop/profit_report.html", {"profit": profit})
+@staff_member_required
+def balance_credit(request):
+
+    # ---- Summary for Credits ----
+    credit_totals = (
+        Credit.objects.values("user__username")
+        .annotate(total=Sum("amount"))
+        .order_by("user__username")
+    )
+
+    # ---- Full Credit List ----
+    credits = Credit.objects.exclude(user__username="Justfit").order_by("-date")
+
+    admin_users = User.objects.filter(is_staff=True)
+
+    return render(request, "shop/balance_credit.html", {
+        "credit_totals": credit_totals,
+        "credits": credits,
+        "admin_users": admin_users
+    })
+
+@staff_member_required
+def update_credit_user(request, pk):
+    credit = Credit.objects.get(pk=pk)
+    new_user_id = request.POST.get("user")
+
+    if new_user_id:
+        credit.user_id = new_user_id
+        credit.save()
+    return redirect("shop:balance_credit")
