@@ -18,7 +18,7 @@ from django.contrib.auth import views as auth_views
 app_name = 'shop'
 
 urlpatterns = [
-    path('', views.product_table, name='product_table'),
+    path('', views.product_list, name='product_list'),
     path('view', views.products_view, name='products_view'),
     path('login/', views.custom_login, name='login'),
     path('signup/', views.custom_signup, name='signup'),

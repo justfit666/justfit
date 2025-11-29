@@ -123,27 +123,31 @@
   <div class="nav-left">
     <a class="logo" href="{% url 'shop:products_view' %}">JustFit</a>
 
-    {% if user.is_authenticated %}
-        <nav>
-            <a href="{% url 'shop:product_table' %}">🛍️ Products</a>
-            <a href="{% url 'shop:expense_list' %}">💸 Expenses</a>
 
-            <!-- Tools dropdown for staff -->
-            {% if user.is_staff %}
-                <div class="dropdown">
-                    <div class="dropbtn">🧰 Tools ▾</div>
-                    <div class="dropdown-content">
-                        <a href="{% url 'shop:fast_add_product' %}">⚡ Fast Add</a>
-                        <a href="{% url 'shop:product_list' %}">📦 web product</a> 
-                        <a href="{% url 'shop:balance' %}">💰  Balance Expense </a>
-                        <a href="{% url 'shop:credit_list' %}">💳 Credit </a>
-                        <a href="{% url 'shop:balance_credit' %}">📈 Balance Credit</a>
-                        <a href="{% url 'shop:profit_report' %}">📊 Profit</a>
-                    </div>
-                </div>
-            {% endif %}
+        <nav>
+   <!-- Visible to everyone -->
+<a href="{% url 'shop:product_list' %}">📦 Web Products</a>
+
+{% if user.is_authenticated and user.is_staff %}
+    <!-- Admin-only links -->
+    <a href="{% url 'shop:product_table' %}">🛍️ Products</a>
+    <a href="{% url 'shop:expense_list' %}">💸 Expenses</a>
+    <a href="{% url 'shop:admin_order_list' %}">📦 Orders</a>
+
+    <div class="dropdown">
+        <div class="dropbtn">🧰 Tools ▾</div>
+        <div class="dropdown-content">
+            <a href="{% url 'shop:fast_add_product' %}">⚡ Fast Add</a>
+            <a href="{% url 'shop:balance' %}">💰 Balance Expense</a>
+            <a href="{% url 'shop:credit_list' %}">💳 Credit</a>
+            <a href="{% url 'shop:balance_credit' %}">📈 Balance Credit</a>
+            <a href="{% url 'shop:profit_report' %}">📊 Profit</a>
+        </div>
+    </div>
+{% endif %}
+
         </nav>
-    {% endif %}
+
   </div>
 
   <nav class="nav-right">

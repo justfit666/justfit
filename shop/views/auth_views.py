@@ -23,7 +23,7 @@ def custom_signup(request):
         login(request, user)
 
         messages.success(request, "🎉 Account created successfully!")
-        return redirect("shop:product_table" if user.is_staff else "shop:products_view")
+        return redirect("shop:product_list" if user.is_staff else "shop:product_list")
 
     return render(request, "shop/signup.html")
 
@@ -36,7 +36,7 @@ def custom_login(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect("shop:product_table" if user.is_staff else "shop:products_view")
+            return redirect("shop:product_list" if user.is_staff else "shop:product_list") 
 
         messages.error(request, "❌ Invalid username or password")
 
