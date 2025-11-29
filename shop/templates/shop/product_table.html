@@ -46,7 +46,7 @@
             </select>
         </div>
 
-        <!-- In Delivery Filter -->
+        <!-- In Delivery Filter
         <div class="col-md-2">
             <label class="fw-bold">In Delivery</label>
             <select name="in_delivery" class="form-select">
@@ -54,7 +54,7 @@
                 <option value="yes" {% if in_delivery_filter == "yes" %}selected{% endif %}>Yes</option>
                 <option value="no"  {% if in_delivery_filter == "no" %}selected{% endif %}>No</option>
             </select>
-        </div>
+        </div> -->
 
         <div class="col-md-2">
             <button class="btn btn-dark w-100">Apply</button>
@@ -107,7 +107,7 @@
                                 <th>Color</th>
                                 <th>Quantity</th>
                                 <th>Available</th>
-                                <th>In Delivery</th>
+                                <!-- <th>In Delivery</th> -->
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -131,12 +131,12 @@
                                            value="{{ v.availability_count }}">
                                 </td>
 
-                                <td>
+                                <!-- <td>
                                     <input type="number" class="form-control variant-input"
                                            data-field="in_delivery"
                                            data-variant="{{ v.id }}"
                                            value="{{ v.in_delivery }}">
-                                </td>
+                                </td> -->
 
                                 <td>
                                     <button class="btn btn-success btn-sm save-variant">💾 Save</button>

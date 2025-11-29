@@ -42,11 +42,11 @@ def product_table(request):
     elif availability == "out_of_stock":
         products_qs = products_qs.filter(variants__availability_count=0).distinct()
 
-    in_delivery = request.GET.get("in_delivery")
-    if in_delivery == "yes":
-        products_qs = products_qs.filter(variants__in_delivery__gt=0).distinct()
-    elif in_delivery == "no":
-        products_qs = products_qs.filter(variants__in_delivery=0).distinct()
+    # in_delivery = request.GET.get("in_delivery")
+    # if in_delivery == "yes":
+    #     products_qs = products_qs.filter(variants__in_delivery__gt=0).distinct()
+    # elif in_delivery == "no":
+    #     products_qs = products_qs.filter(variants__in_delivery=0).distinct()
 
     min_qty = request.GET.get("min_qty")
     max_qty = request.GET.get("max_qty")
@@ -83,8 +83,8 @@ def product_table(request):
         "sort": sort,
         "availability": availability,
         "min_qty": min_qty,
-        "max_qty": max_qty,
-        "in_delivery_filter": in_delivery,
+        "max_qty": max_qty
+        # "in_delivery_filter": in_delivery,
     })
 
 
