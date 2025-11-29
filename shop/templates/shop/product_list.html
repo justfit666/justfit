@@ -70,11 +70,12 @@
 
                 <!-- PRICE -->
                 <p class="mt-1 text-lg font-semibold text-red-600">
-                    {{ p.selling_price }} EGP
+                    {{ p.selling_price|floatformat:0  }} EGP 
                     {% if p.discount > 0 %}
                     <span class="ml-2 text-sm text-gray-400 line-through font-normal">
-                        {{ p.purchase_price }} EGP
+                        {{ p.original_price|floatformat:0 }} EGP
                     </span>
+                    
                     {% endif %}
                 </p>
 
@@ -86,7 +87,7 @@
                 {% endif %}
 
                 <!-- OUT OF STOCK -->
-                {% if not p.availability %}
+                {% if not p.total_quantity_available %}
                 <span class="text-xs text-red-500 font-bold mt-1 block">
                     OUT OF STOCK
                 </span>
@@ -120,6 +121,8 @@
     </div>
 
 </div>
+
+
 
 </body>
 </html>

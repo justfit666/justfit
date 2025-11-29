@@ -110,14 +110,50 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.user} Cart → {self.variant}"
 
-
 class Order(models.Model):
+
+    STATUS_CHOICES = [
+        ("in_progress", "In Progress"),
+        ("done", "Done"),
+        ("cancelled", "Cancelled"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="in_progress"
+    )
+
+    comment = models.TextField(blank=True, null=True)
+    cutomer_name = models.TextField(blank=True, null=True)
+
+    # Track old status
+    _old_status = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._old_status = self.status
+
+    def save(self, *args, **kwargs):
+
+        # Detect status change → Restock only when moving TO cancelled
+        if self.pk and self._old_status != "cancelled" and self.status == "cancelled":
+            for item in self.items.all():
+                variant = item.variant
+                if variant:
+                    variant.availability_count += item.quantity
+                    variant.save()
+
+        super().save(*args, **kwargs)
+        self._old_status = self.status  # update for next change
+
     def __str__(self):
-        return f"Order #{self.id} by {self.user}"
+        return f"Order #{self.id} - {self.get_status_display()}"
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True)

@@ -1,7 +1,18 @@
 # shop/urls.py
 from django.urls import path
 from . import views
+
+from . import views
+
 from django.contrib.auth import views as auth_views
+
+# from .auth_views import *
+# from .product_views import *
+# from .variant_views import *
+# from .favorite_cart_views import *
+# from .expense_views import *
+# from .credit_views import *
+# from .order_views import *
 
 
 app_name = 'shop'
@@ -39,6 +50,16 @@ urlpatterns = [
     path("credit/add/", views.add_credit, name="add_credit"),
     path("credits/", views.credit_list, name="credit_list"),
     path("credit/update/<int:pk>/", views.update_credit_user, name="update_credit_user"),
+    path("api/product/<int:product_id>/filter/", views.get_filtered_variant, name="variant_filter"),
+    path("orders/", views.admin_order_list, name="admin_order_list"),
+    # path("orders/bulk-update/", views.bulk_update_orders, name="bulk_update_orders"),
+    path("orders/update-field/<int:order_id>/", views.ajax_update_order_field, name="ajax_update_order_field"),
+    path("orders/bulk-update/", views.bulk_update_orders, name="bulk_update_orders"),
+    path("orders/update-status/<int:order_id>/", views.update_order_status, name="update_order_status"),
+    path("orders/update-item-status/<int:item_id>/", views.update_item_status, name="update_item_status"),
+
+
+
 
 
 

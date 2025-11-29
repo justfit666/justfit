@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container my-5">
+    <h2 class="mb-4 text-center">📦 Order Management</h2>
+
+    <!-- 🔍 Filter -->
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <!-- <option value="all_statuses">All Statuses</option> -->
+                {% for key, val in status_choices %}
+                    <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ val }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <!-- Bulk action -->
+    <form method="POST" action="{% url 'shop:bulk_update_orders' %}">
+        {% csrf_token %}
+
+        <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+            <select name="new_status" class="form-select" style="max-width: 250px;">
+                <option value="">-- Change Status To --</option>
+                {% for key, val in status_choices %}
+                    <option value="{{ key }}">{{ val }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle text-center">
+                <thead class="table-dark">
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>Order ID</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Customer Name</th>
+                    <th>Comment</th>
+                    <th>Created</th>
+                    <th>Product</th>
+                    <th>Size</th>
+                    <th>Color</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for o in orders %}
+                    {% for item in o.items.all %}
+                    <tr>
+
+                        {% if forloop.first %}
+                        <td rowspan="{{ o.items.count }}">
+                            <input type="checkbox" name="order_ids" value="{{ o.id }}" class="order-checkbox">
+                        </td>
+
+                        <td rowspan="{{ o.items.count }}" class="fw-bold">#{{ o.id }}</td>
+
+                        <td rowspan="{{ o.items.count }}">{{ o.user.username }}</td>
+
+                        <td rowspan="{{ o.items.count }}">
+                            {% if o.status == 'done' %}
+                                <span class="badge bg-success">{{ o.get_status_display }}</span>
+                            {% elif o.status == 'cancelled' %}
+                                <span class="badge bg-danger">{{ o.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-info text-dark">{{ o.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Editable Customer Name -->
+                        <td rowspan="{{ o.items.count }}">
+                            <input type="text"
+                                   class="form-control text-center order-input"
+                                   data-order="{{ o.id }}"
+                                   data-field="cutomer_name"
+                                   value="{{ o.cutomer_name }}"
+                                 >
+                        </td>
+
+                        <!-- Editable Comment -->
+                        <td rowspan="{{ o.items.count }}">
+                            <input type="text"
+                                   class="form-control text-center order-input"
+                                   data-order="{{ o.id }}"
+                                   data-field="comment"
+                                   value="{{ o.comment }}"
+                                   name="comment">
+                        </td>
+
+                        <td rowspan="{{ o.items.count }}">
+                            {{ o.created_at|date:"Y-m-d H:i" }}
+                        </td>
+                        {% endif %}
+
+                        <td>{{ item.variant.product.name }}</td>
+                        <td>{{ item.variant.size }}</td>
+                        <td>{{ item.variant.color }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price }} EGP</td>
+
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script>
+/* ------------------------------
+   CSRF Helper
+------------------------------ */
+function getCookie(name) {
+    let value = null;
+    if (document.cookie) {
+        document.cookie.split(';').forEach(c => {
+            c = c.trim();
+            if (c.startsWith(name + '=')) {
+                value = decodeURIComponent(c.substring(name.length + 1));
+            }
+        });
+    }
+    return value;
+}
+const csrftoken = getCookie('csrftoken');
+
+
+/* ------------------------------
+   Inline Alert (Your Style)
+------------------------------ */
+function showInlineAlert(input, message, type="success") {
+    const old = input.parentNode.querySelector(".inline-alert");
+    if (old) old.remove();
+
+    const div = document.createElement("div");
+    div.className = `inline-alert alert alert-${type} mt-1 py-1 px-2`;
+    div.style.fontSize = "0.8rem";
+    div.innerText = message;
+
+    input.parentNode.appendChild(div);
+    setTimeout(() => div.remove(), 2500);
+}
+
+
+/* ------------------------------
+   Auto-Save on Change
+------------------------------ */
+document.querySelectorAll(".order-input").forEach(input => {
+    input.addEventListener("change", async () => {
+
+        let orderId = input.dataset.order;
+        let field = input.dataset.field;
+        let value = input.value;
+
+        let body = new URLSearchParams();
+        body.append("field", field);
+        body.append("value", value);
+
+        try {
+            let response = await fetch(`/orders/update-field/${orderId}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                body: body
+            });
+
+            let json = await response.json();
+
+            if (json.success) {
+                showInlineAlert(input, "Saved ✔");
+            } else {
+                showInlineAlert(input, json.message, "danger");
+            }
+
+        } catch (error) {
+            showInlineAlert(input, "Error", "danger");
+        }
+    });
+});
+
+
+/* ------------------------------
+   Select All Checkbox
+------------------------------ */
+document.getElementById("select-all").addEventListener("change", function() {
+    document.querySelectorAll(".order-checkbox").forEach(cb => cb.checked = this.checked);
+});
+</script>
+
+{% endblock %}
