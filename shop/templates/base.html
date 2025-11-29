@@ -126,16 +126,16 @@
 
         <nav>
    <!-- Visible to everyone -->
-<a href="{% url 'shop:product_list' %}">📦 Web Products</a>
+<a href="{% url 'shop:product_list' %}">🏠 Web Products</a>
 
 {% if user.is_authenticated and user.is_staff %}
     <!-- Admin-only links -->
     <a href="{% url 'shop:product_table' %}">🛍️ Products</a>
     <a href="{% url 'shop:expense_list' %}">💸 Expenses</a>
-    <a href="{% url 'shop:admin_order_list' %}">📦 Orders</a>
+    <a href="{% url 'shop:admin_order_list' %}">📑  Orders</a>
 
     <div class="dropdown">
-        <div class="dropbtn">🧰 Tools ▾</div>
+        <div class="dropbtn">☰ ▾</div>
         <div class="dropdown-content">
             <a href="{% url 'shop:fast_add_product' %}">⚡ Fast Add</a>
             <a href="{% url 'shop:balance' %}">💰 Balance Expense</a>
