@@ -107,7 +107,17 @@
                         <td>{{ item.variant.size }}</td>
                         <td>{{ item.variant.color }}</td>
                         <td>{{ item.quantity }}</td>
-                        <td>{{ item.price }} EGP</td>
+                       
+                     <!-- Editable Item Price -->
+                        <td>
+                            <input type="number"
+                                step="0.01"
+                                class="form-control text-center item-input"
+                                data-item="{{ item.id }}"
+                                data-field="price"
+                                value="{{ item.price }}">
+                        </td>
+
 
                     </tr>
                     {% endfor %}
@@ -196,6 +206,45 @@ document.querySelectorAll(".order-input").forEach(input => {
 document.getElementById("select-all").addEventListener("change", function() {
     document.querySelectorAll(".order-checkbox").forEach(cb => cb.checked = this.checked);
 });
+
+
+
+
+/* ------------------------------
+   Auto-Save Item Price
+------------------------------ */
+document.querySelectorAll(".item-input").forEach(input => {
+    input.addEventListener("change", async () => {
+
+        let itemId = input.dataset.item;
+        let field = input.dataset.field;
+        let value = input.value;
+
+        let body = new URLSearchParams();
+        body.append("field", field);
+        body.append("value", value);
+
+        try {
+            let response = await fetch(`/orders/update-item-field/${itemId}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": csrftoken },
+                body: body
+            });
+
+            let json = await response.json();
+
+            if (json.success) {
+                showInlineAlert(input, "Saved ✔");
+            } else {
+                showInlineAlert(input, json.message, "danger");
+            }
+
+        } catch (error) {
+            showInlineAlert(input, "Error", "danger");
+        }
+    });
+});
+
 </script>
 
 {% endblock %}

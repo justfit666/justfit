@@ -57,6 +57,8 @@ urlpatterns = [
     path("orders/bulk-update/", views.bulk_update_orders, name="bulk_update_orders"),
     path("orders/update-status/<int:order_id>/", views.update_order_status, name="update_order_status"),
     path("orders/update-item-status/<int:item_id>/", views.update_item_status, name="update_item_status"),
+    path("orders/update-item-field/<int:item_id>/", views.ajax_update_item_field, name="ajax_update_item_field"),
+
 
 
 

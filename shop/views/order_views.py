@@ -94,9 +94,34 @@ def ajax_update_order_field(request, order_id):
         return JsonResponse({"success": False, "message": "Field is missing"})
 
     order = get_object_or_404(Order, id=order_id)
-    if field not in ["cutomer_name", "comment"]:
+    if field not in ["cutomer_name", "comment","price"]:
         return JsonResponse({"success": False, "message": "Invalid field"})
 
     setattr(order, field, value)
     order.save()
     return JsonResponse({"success": True})
+
+
+@admin_required
+def ajax_update_item_field(request, item_id):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request"})
+
+    field = request.POST.get("field")
+    value = request.POST.get("value")
+
+    item = get_object_or_404(OrderItem, id=item_id)
+
+    if field not in ["price"]:
+        return JsonResponse({"success": False, "message": "Invalid field"})
+
+    try:
+        value = float(value)
+    except:
+        return JsonResponse({"success": False, "message": "Invalid number"})
+
+    setattr(item, field, value)
+    item.save()
+
+    return JsonResponse({"success": True})
+
