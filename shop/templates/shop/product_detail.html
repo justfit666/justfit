@@ -2,52 +2,134 @@
 {% load static %}
 {% block content %}
 
-<div class="container my-5">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <div class="row">
-      <div class="col-md-6 text-center">
-          <img id="variant-image" src="{{ product.first_image_url }}"
-               class="img-fluid rounded shadow" style="max-height: 400px">
-      </div>
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-      <div class="col-md-6">
-          <h2 class="fw-bold">{{ product.name }}</h2>
-          <h4 class="text-success" id="variant-price">${{ product.price }}</h4>
-          <hr>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
-          <!-- SIZE SELECTOR -->
-          <h5 class="mt-3">Select Size</h5>
-          <div id="size-options">
-              {% for s in sizes %}
-                  <button class="btn btn-outline-primary m-1 size-btn"
-                          data-size="{{ s }}">{{ s }}</button>
-              {% endfor %}
-          </div>
+        <!-- PRODUCT IMAGE -->
+        <div class="relative">
+            <img id="variant-image"
+                 src="{{ product.first_image_url }}"
+                 class="w-full rounded-xl shadow-md object-cover max-h-[500px]">
 
-          <!-- COLOR SELECTOR -->
-          <h5 class="mt-3">Select Color</h5>
-          <div id="color-options">
-              {% for c in colors %}
-                  <button class="btn btn-outline-dark m-1 color-btn"
-                          data-color="{{ c }}">{{ c }}</button>
-              {% endfor %}
-          </div>
+            <!-- SPECIAL OFFER BADGE — SHOW ONLY WHEN specialOffer EXISTS -->
+            {% if product.specialOffer %}
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-4 py-1 text-sm font-bold rounded-md animate-pulse">
+                🎁 {{ product.specialOffer }}
+            </div>
+            {% else %}
 
-          <hr>
+            <!-- NORMAL DISCOUNT BADGE — SHOW ONLY IF NO SPECIAL OFFER -->
+            {% if product.discount > 0 %}
+            <div class="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-xs font-bold rounded-md">
+                SAVE {{ product.discount|floatformat:0 }}%
+            </div>
+            {% endif %}
 
-          <button class="btn btn-success btn-lg mt-3">Add to Cart</button>
-      </div>
-  </div>
+            {% endif %}
+        </div>
+
+        <!-- PRODUCT INFO -->
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ product.name }}</h1>
+
+            <p class="text-gray-600 mt-3 leading-relaxed">
+                {{ product.description }}
+            </p>
+
+            <!-- PRICE SECTION — HIDDEN WHEN specialOffer EXISTS -->
+            {% if not product.specialOffer %}
+            <div class="mt-4">
+                <p class="text-2xl font-semibold text-red-600">
+                    {{ product.selling_price|floatformat:0 }} EGP
+
+                    {% if product.discount > 0 %}
+                    <span class="text-gray-400 line-through text-lg font-normal ml-2">
+                        {{ product.original_price|floatformat:0 }} EGP
+                    </span>
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- SIZES — HIDDEN WHEN specialOffer EXISTS -->
+            {% if sizes %}
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Select Size</h3>
+                <div id="size-options" class="flex flex-wrap gap-2">
+                    {% for s in sizes %}
+                    <button
+                        class="size-btn px-4 py-2 border rounded-md hover:bg-black hover:text-white transition"
+                        data-size="{{ s }}">
+                        {{ s }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- COLORS — HIDDEN WHEN specialOffer EXISTS -->
+            {% if colors  %}
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Select Color</h3>
+                <div id="color-options" class="flex flex-wrap gap-2">
+                    {% for c in colors %}
+                    <button
+                        class="color-btn px-4 py-2 border rounded-md hover:bg-gray-800 hover:text-white transition"
+                        data-color="{{ c }}">
+                        {{ c }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+
+            <!-- ACTION BUTTON -->
+            {% if product.specialOffer %}
+                <!-- SPECIAL OFFER BUTTON — BIG, ANIMATED -->
+                <button 
+                    class="messenger-btn w-full mt-8 bg-orange-500 text-white py-4 rounded-xl text-xl font-bold animate-bounce flex items-center justify-center gap-3"
+                    data-product="{{ product.name }}"
+                    data-size=""
+                    data-color=""
+                    data-qty="1">
+
+                    <i class="fa-brands fa-facebook text-3xl"></i>
+                    احجز العرض الخاص دلوقتي 🔥
+                </button>
+
+            {% else %}
+                <!-- NORMAL BUTTON -->
+                <button 
+                    class="messenger-btn w-full mt-3 bg-blue-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
+                    data-product="{{ product.name }}"
+                    data-size=""
+                    data-color=""
+                    data-qty="1">
+                
+                    <i class="fa-brands fa-facebook text-2xl"></i>
+                    احجز دلوقتي
+                </button>
+
+
+                <!-- <div class="mt-8"> <button class="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-800 transition"> Add to Cart 🛒 </button> </div> -->
+            {% endif %}
+
+        </div>
+    </div>
 </div>
 
 
+
+<!-- JS -->
 <script>
 let selectedSize = null;
 let selectedColor = null;
 
-// ------------------------------
-// 🔄 Update UI & call Django API
-// ------------------------------
 function updateVariant() {
     const url = `/api/product/{{ product.id }}/filter/?size=${selectedSize || ""}&color=${selectedColor || ""}`;
 
@@ -55,71 +137,62 @@ function updateVariant() {
         .then(res => res.json())
         .then(data => {
 
-            // ⭐ Update SIZE buttons
             document.querySelectorAll(".size-btn").forEach(btn => {
                 const val = btn.dataset.size;
                 btn.disabled = !data.sizes.includes(val);
-                btn.classList.toggle("active-btn", val === selectedSize);
+                btn.classList.toggle("bg-black", val === selectedSize);
+                btn.classList.toggle("text-white", val === selectedSize);
             });
 
-            // ⭐ Update COLOR buttons
             document.querySelectorAll(".color-btn").forEach(btn => {
                 const val = btn.dataset.color;
                 btn.disabled = !data.colors.includes(val);
-                btn.classList.toggle("active-btn", val === selectedColor);
+                btn.classList.toggle("bg-gray-800", val === selectedColor);
+                btn.classList.toggle("text-white", val === selectedColor);
             });
 
-            // ⭐ Update image and price
             if (data.image) document.getElementById("variant-image").src = data.image;
-            //if (data.price) document.getElementById("variant-price").innerText = "$" + data.price;
         });
 }
 
-// ------------------------------
-// 🎯 handle size click
-// ------------------------------
 document.querySelectorAll(".size-btn").forEach(btn => {
     btn.addEventListener("click", function () {
         const clicked = this.dataset.size;
-
-        // 👉 Clicking the SAME size clears filter
-        if (selectedSize === clicked) {
-            selectedSize = null;
-        } else {
-            selectedSize = clicked;
-        }
-
+        selectedSize = (selectedSize === clicked ? null : clicked);
         updateVariant();
     });
 });
 
-// ------------------------------
-// 🎯 handle color click
-// ------------------------------
 document.querySelectorAll(".color-btn").forEach(btn => {
     btn.addEventListener("click", function () {
         const clicked = this.dataset.color;
-
-        // 👉 Clicking the SAME color clears filter
-        if (selectedColor === clicked) {
-            selectedColor = null;
-        } else {
-            selectedColor = clicked;
-        }
-
+        selectedColor = (selectedColor === clicked ? null : clicked);
         updateVariant();
     });
 });
+
+document.querySelectorAll(".messenger-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+
+        let product = this.dataset.product;
+        let size = this.dataset.size || "Not selected";
+        let color = this.dataset.color || "Not selected";
+        let qty = this.dataset.qty;
+
+        let message =
+`Hello, I am interested in this product:
+Product: ${product}
+Size: ${size}
+Color: ${color}
+Quantity: ${qty}`;
+
+        navigator.clipboard.writeText(message)
+            .then(() => alert("Message copied ✔\nPaste it in FB chat"));
+
+        let pageId = "61582294003145";
+        window.open(`https://www.facebook.com/messages/t/${pageId}`, "_blank");
+    });
+});
 </script>
-
-
-<!-- ⭐ Custom highlight class -->
-<style>
-.active-btn {
-    background-color: #0d6efd !important;
-    color: white !important;
-    border-color: #0d6efd !important;
-}
-</style>
 
 {% endblock %}

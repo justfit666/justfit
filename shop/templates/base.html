@@ -113,12 +113,65 @@
             flex-wrap: wrap;
         }
     }
+
+    /* Footer Contact Bar */
+.footer-contact {
+    background: #1f2937; /* Same dark header color */
+    padding: 20px 0;
+    margin-top: 60px;
+}
+
+.footer-inner {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    gap: 35px;
+    flex-wrap: wrap;
+}
+
+.footer-link {
+    color: #e5e7eb;
+    text-decoration: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: 0.2s ease-in-out;
+}
+
+.footer-link:hover {
+    color: white;
+}
+
+.footer-link i {
+    font-size: 20px;
+}
+
+/* Icon Colors */
+.footer-link.fb i {
+    color: #1877f2;   /* Facebook blue */
+}
+.footer-link.wa i {
+    color: #25D366;   /* WhatsApp green */
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .footer-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+}
+
   </style>
 </head>
 
 <body>
 
 <header>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <div class="nav-left">
     <a class="logo" href="{% url 'shop:products_view' %}">JustFit</a>
@@ -165,6 +218,27 @@
   {% block content %}
   {% endblock %}
 </main>
+
+<!-- SIMPLE FOOTER CONTACT BAR -->
+<footer class="footer-contact">
+    <div class="footer-inner">
+
+        <a href="https://www.facebook.com/profile.php?id=61582294003145" 
+           target="_blank" 
+           class="footer-link fb">
+            <i class="fa-brands fa-facebook-f"></i>
+            تواصل معنا عبر فيسبوك
+        </a>
+
+        <a href="https://wa.me/201026200036" 
+           target="_blank" 
+           class="footer-link wa">
+            <i class="fa-brands fa-whatsapp"></i>
+            واتساب: 01026200036
+        </a>
+
+    </div>
+</footer>
 
 </body>
 </html>

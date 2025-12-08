@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f7f7f7; }
@@ -22,11 +23,10 @@
 
     <!-- HEADER -->
     <div class="flex justify-between items-center mb-6 border-b pb-3">
-        <p class="text-gray-600">
+        <!-- <p class="text-gray-600">
             <span class="font-bold text-gray-800">{{ products|length }}</span> Products Found
         </p>
 
-        <!-- Sorting (Optional - static for now) -->
         <div class="flex items-center space-x-2 text-sm">
             <label for="sort" class="text-gray-600">Sort By:</label>
             <select id="sort" class="border rounded-md p-1">
@@ -35,7 +35,7 @@
                 <option value="">Price: High → Low</option>
                 <option value="">Name: A → Z</option>
             </select>
-        </div>
+        </div> -->
     </div>
 
     <!-- PRODUCT GRID -->
@@ -53,10 +53,21 @@
                         <img src="{% static 'shop/no-image.png' %}" class="w-full h-72 object-cover">
                     {% endif %}
 
+                    <!-- SPECIAL OFFER BADGE -->
+                    {% if p.specialOffer %}
+                    <div class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md animate-pulse">
+                        🎁 {{ p.specialOffer }}
+                    </div>
+
+                    {% else %}
+
+                    <!-- NORMAL DISCOUNT BADGE -->
                     {% if p.discount > 0 %}
                     <div class="absolute top-2 left-2 text-white text-xs font-bold px-2 py-1 rounded-sm discount-badge">
                         SAVE {{ p.discount|floatformat:0 }}%
                     </div>
+                    {% endif %}
+
                     {% endif %}
                 </div>
             </a>
@@ -68,16 +79,17 @@
                     {{ p.name }}
                 </h3>
 
-                <!-- PRICE -->
+                <!-- PRICE (hidden if specialOffer exists) -->
+                {% if not p.specialOffer %}
                 <p class="mt-1 text-lg font-semibold text-red-600">
-                    {{ p.selling_price|floatformat:0  }} EGP 
+                    {{ p.selling_price|floatformat:0 }} EGP 
                     {% if p.discount > 0 %}
                     <span class="ml-2 text-sm text-gray-400 line-through font-normal">
                         {{ p.original_price|floatformat:0 }} EGP
                     </span>
-                    
                     {% endif %}
                 </p>
+                {% endif %}
 
                 <!-- COLOR + BRAND -->
                 {% if p.color or p.vendor %}
@@ -86,8 +98,8 @@
                 </p>
                 {% endif %}
 
-                <!-- OUT OF STOCK -->
-                {% if not p.total_quantity_available %}
+                <!-- OUT OF STOCK (not shown if special offer exists) -->
+                {% if not p.specialOffer and not p.total_quantity_available %}
                 <span class="text-xs text-red-500 font-bold mt-1 block">
                     OUT OF STOCK
                 </span>
@@ -95,34 +107,46 @@
 
                 <!-- BUTTONS -->
                 <div class="mt-3">
-                    {% if user.is_authenticated %}
-                        {% if p.variants.first %}
-                        <a href="{% url 'shop:add_to_cart' p.variants.first.id %}"
-                           class="block w-full bg-black text-white py-2 rounded text-sm hover:bg-gray-800">
-                            Add to Cart 🛒
-                        </a>
-                        {% endif %}
 
-                        <a href="{% url 'shop:toggle_favorite' p.id %}"
-                           class="block w-full border border-gray-300 py-2 rounded text-sm mt-2 hover:bg-red-50">
-                            {% if p.id in favorite_ids %}❤️ Remove from Favorites{% else %}🤍 Add to Favorites{% endif %}
+                    <!-- SPECIAL OFFER BUTTON (Only) -->
+                    {% if p.specialOffer %}
+                        <a href="{% url 'shop:product_detail' p.id %}"
+                           class="block w-full bg-orange-500 text-white py-3 rounded-lg text-sm font-bold
+                           animate-bounce hover:bg-orange-600 flex items-center justify-center gap-2">
+                            <i class="fa-brands fa-facebook text-lg"></i>
+                            احجز العرض دلوقتي 🔥
                         </a>
+
                     {% else %}
-                        <a href="{% url 'shop:login' %}"
-                           class="block w-full border py-2 rounded text-sm text-gray-600">
-                            Login to Buy
-                        </a>
+
+                        <!-- {% if user.is_authenticated %}
+                            {% if p.variants.first %}
+                            <a href="{% url 'shop:add_to_cart' p.variants.first.id %}"
+                            class="block w-full bg-black text-white py-2 rounded text-sm hover:bg-gray-800">
+                                Add to Cart 🛒
+                            </a>
+                            {% endif %}
+
+                            <a href="{% url 'shop:toggle_favorite' p.id %}"
+                            class="block w-full border border-gray-300 py-2 rounded text-sm mt-2 hover:bg-red-50">
+                                {% if p.id in favorite_ids %}❤️ Remove from Favorites{% else %}🤍 Add to Favorites{% endif %}
+                            </a>
+                        {% else %}
+                            <a href="{% url 'shop:login' %}"
+                            class="block w-full border py-2 rounded text-sm text-gray-600">
+                                Login to Buy
+                            </a>
+                        {% endif %} -->
                     {% endif %}
+
                 </div>
 
             </div>
         </div>
         {% endfor %}
+
     </div>
-
 </div>
-
-
 
 </body>
 </html>

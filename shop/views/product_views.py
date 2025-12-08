@@ -83,7 +83,7 @@ def product_table(request):
         "sort": sort,
         "availability": availability,
         "min_qty": min_qty,
-        "max_qty": max_qty
+        "max_qty": max_qty,
         # "in_delivery_filter": in_delivery,
     })
 
@@ -114,7 +114,12 @@ def product_list(request):
 
 
 def product_detail(request, product_id):
+
     product = get_object_or_404(Product, id=product_id)
+    try:
+        product.original_price = product.selling_price + (product.selling_price * (product.discount / 100))
+    except Exception:
+        product.original_price = product.selling_price
     variants = product.variants.filter(availability_count__gt=0)
     sizes = variants.values_list("size", flat=True).distinct()
     colors = variants.values_list("color", flat=True).distinct()

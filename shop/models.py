@@ -40,6 +40,7 @@ class Product(models.Model):
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     description = models.TextField(blank=True, null=True)
+    specialOffer=models.TextField(blank=True, null=True)
     size_type = models.ForeignKey(SizeType, on_delete=models.SET_NULL, null=True, blank=True)
 
     @property
