@@ -179,24 +179,46 @@
 
         <nav>
    <!-- Visible to everyone -->
-<a href="{% url 'shop:product_list' %}">🏠 Web Products</a>
+<a href="{% url 'shop:product_list' %}">🏠 منتاجات الاطفال</a>
 
 {% if user.is_authenticated and user.is_staff %}
     <!-- Admin-only links -->
-    <a href="{% url 'shop:product_table' %}">🛍️ Products</a>
-    <a href="{% url 'shop:expense_list' %}">💸 Expenses</a>
-    <a href="{% url 'shop:admin_order_list' %}">📑  Orders</a>
+
 
     <div class="dropdown">
-        <div class="dropbtn">☰ ▾</div>
+        <div class="dropbtn">☰ 💳 Products and Order</div>
         <div class="dropdown-content">
-            <a href="{% url 'shop:fast_add_product' %}">⚡ Fast Add</a>
-            <a href="{% url 'shop:balance' %}">💰 Balance Expense</a>
-            <a href="{% url 'shop:credit_list' %}">💳 Credit</a>
-            <a href="{% url 'shop:balance_credit' %}">📈 Balance Credit</a>
-            <a href="{% url 'shop:profit_report' %}">📊 Profit</a>
+            <a href="{% url 'shop:product_table' %}">🛍️ Products</a>
+            <a href="{% url 'shop:fast_add_product' %}"> Add Product</a>
+            <a href="{% url 'shop:admin_order_list' %}">📑  Orders status</a>
         </div>
     </div>
+
+
+
+
+    <div class="dropdown">
+        <div class="dropbtn">☰  💸 المدفوعات▾</div>
+        <div class="dropdown-content">
+            <a href="{% url 'shop:expense_list' %}">💸 Expenses المصروفات</a>
+            <a href="{% url 'shop:balance' %}">💰  تسوية المصروفات بيننا</a>
+        </div>
+    </div>
+
+
+    <div class="dropdown">
+        <div class="dropbtn">☰ 💳 التحصيلات والرصيد</div>
+        <div class="dropdown-content">
+            <a href="{% url 'shop:credit_list' %}">💳 ادخال التحصيلات </a>
+            <a href="{% url 'shop:balance_credit' %}">📈 ما لك من رصيد</a>
+            <a href="{% url 'shop:profit_report' %}">📊 ارباح الشركة</a>
+        </div>
+    </div>
+
+
+
+
+
 {% endif %}
 
         </nav>
