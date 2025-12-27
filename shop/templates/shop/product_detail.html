@@ -15,20 +15,16 @@
                  src="{{ product.first_image_url }}"
                  class="w-full rounded-xl shadow-md object-cover max-h-[500px]">
 
-            <!-- SPECIAL OFFER BADGE — SHOW ONLY WHEN specialOffer EXISTS -->
             {% if product.specialOffer %}
             <div class="absolute top-3 right-3 bg-orange-500 text-white px-4 py-1 text-sm font-bold rounded-md animate-pulse">
                 🎁 {{ product.specialOffer }}
             </div>
             {% else %}
-
-            <!-- NORMAL DISCOUNT BADGE — SHOW ONLY IF NO SPECIAL OFFER -->
-            {% if product.discount > 0 %}
-            <div class="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-xs font-bold rounded-md">
-                SAVE {{ product.discount|floatformat:0 }}%
-            </div>
-            {% endif %}
-
+                {% if product.discount > 0 %}
+                <div class="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-xs font-bold rounded-md">
+                    SAVE {{ product.discount|floatformat:0 }}%
+                </div>
+                {% endif %}
             {% endif %}
         </div>
 
@@ -40,14 +36,12 @@
                 {{ product.description }}
             </p>
 
-            <!-- PRICE SECTION — HIDDEN WHEN specialOffer EXISTS -->
             {% if not product.specialOffer %}
             <div class="mt-4">
                 <p class="text-2xl font-semibold text-red-600">
                     {{ product.selling_price|floatformat:0 }} EGP
-
                     {% if product.discount > 0 %}
-                    <span class="text-gray-400 line-through text-lg font-normal ml-2">
+                    <span class="text-gray-400 line-through text-lg ml-2">
                         {{ product.original_price|floatformat:0 }} EGP
                     </span>
                     {% endif %}
@@ -55,14 +49,14 @@
             </div>
             {% endif %}
 
-            <!-- SIZES — HIDDEN WHEN specialOffer EXISTS -->
+            <!-- SIZES -->
             {% if sizes %}
             <div class="mt-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Select Size</h3>
-                <div id="size-options" class="flex flex-wrap gap-2">
+                <h3 class="text-lg font-semibold mb-2">Select Size</h3>
+                <div class="flex gap-2 flex-wrap">
                     {% for s in sizes %}
                     <button
-                        class="size-btn px-4 py-2 border rounded-md hover:bg-black hover:text-white transition"
+                        class="size-btn px-4 py-2 border rounded-md transition"
                         data-size="{{ s }}">
                         {{ s }}
                     </button>
@@ -71,14 +65,14 @@
             </div>
             {% endif %}
 
-            <!-- COLORS — HIDDEN WHEN specialOffer EXISTS -->
-            {% if colors  %}
+            <!-- COLORS -->
+            {% if colors %}
             <div class="mt-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Select Color</h3>
-                <div id="color-options" class="flex flex-wrap gap-2">
+                <h3 class="text-lg font-semibold mb-2">Select Color</h3>
+                <div class="flex gap-2 flex-wrap">
                     {% for c in colors %}
                     <button
-                        class="color-btn px-4 py-2 border rounded-md hover:bg-gray-800 hover:text-white transition"
+                        class="color-btn px-4 py-2 border rounded-md transition"
                         data-color="{{ c }}">
                         {{ c }}
                     </button>
@@ -87,112 +81,108 @@
             </div>
             {% endif %}
 
+            <!-- BUTTON -->
+            <button
+                class="messenger-btn w-full mt-8 bg-blue-600 text-white py-3 rounded-lg text-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition"
+                data-product="{{ product.name }}"
+                data-size=""
+                data-color=""
+                data-qty="1">
 
-            <!-- ACTION BUTTON -->
-            {% if product.specialOffer %}
-                <!-- SPECIAL OFFER BUTTON — BIG, ANIMATED -->
-                <button 
-                    class="messenger-btn w-full mt-8 bg-orange-500 text-white py-4 rounded-xl text-xl font-bold animate-bounce flex items-center justify-center gap-3"
-                    data-product="{{ product.name }}"
-                    data-size=""
-                    data-color=""
-                    data-qty="1">
-
-                    <i class="fa-brands fa-facebook text-3xl"></i>
-                    احجز العرض الخاص دلوقتي 🔥
-                </button>
-
-            {% else %}
-                <!-- NORMAL BUTTON -->
-                <button 
-                    class="messenger-btn w-full mt-3 bg-blue-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2"
-                    data-product="{{ product.name }}"
-                    data-size=""
-                    data-color=""
-                    data-qty="1">
-                
-                    <i class="fa-brands fa-facebook text-2xl"></i>
-                    احجز دلوقتي
-                </button>
-
-
-                <!-- <div class="mt-8"> <button class="w-full bg-black text-white py-3 rounded-lg text-lg font-medium hover:bg-gray-800 transition"> Add to Cart 🛒 </button> </div> -->
-            {% endif %}
-
+                <i class="fa-brands fa-facebook text-2xl"></i>
+                احجز دلوقتي
+            </button>
         </div>
     </div>
 </div>
 
-
-
 <!-- JS -->
 <script>
-let selectedSize = null;
-let selectedColor = null;
-
-function updateVariant() {
-    const url = `/api/product/{{ product.id }}/filter/?size=${selectedSize || ""}&color=${selectedColor || ""}`;
-
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-
-            document.querySelectorAll(".size-btn").forEach(btn => {
-                const val = btn.dataset.size;
-                btn.disabled = !data.sizes.includes(val);
-                btn.classList.toggle("bg-black", val === selectedSize);
-                btn.classList.toggle("text-white", val === selectedSize);
+    let selectedSize = null;
+    let selectedColor = null;
+    
+    function updateVariant() {
+        const url = `/api/product/{{ product.id }}/filter/?size=${selectedSize || ""}&color=${selectedColor || ""}`;
+    
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+    
+                /* ---------- SIZES ---------- */
+                document.querySelectorAll(".size-btn").forEach(btn => {
+                    const size = btn.dataset.size;
+    
+                    btn.disabled = false;
+                    btn.classList.remove("bg-black", "text-white", "opacity-40", "cursor-not-allowed");
+    
+                    // Disable sizes ONLY if color selected
+                    if (selectedColor && !data.sizes.includes(size)) {
+                        btn.disabled = true;
+                        btn.classList.add("opacity-40", "cursor-not-allowed");
+                    }
+    
+                    if (size === selectedSize) {
+                        btn.classList.add("bg-black", "text-white");
+                    }
+                });
+    
+                /* ---------- COLORS ---------- */
+                document.querySelectorAll(".color-btn").forEach(btn => {
+                    const color = btn.dataset.color;
+    
+                    btn.disabled = false;
+                    btn.classList.remove("bg-gray-800", "text-white", "opacity-40", "cursor-not-allowed");
+    
+                    // Disable colors ONLY if size selected
+                    if (selectedSize && !data.colors.includes(color)) {
+                        btn.disabled = true;
+                        btn.classList.add("opacity-40", "cursor-not-allowed");
+                    }
+    
+                    if (color === selectedColor) {
+                        btn.classList.add("bg-gray-800", "text-white");
+                    }
+                });
+    
+                /* ---------- IMAGE ---------- */
+                if (data.image) {
+                    document.getElementById("variant-image").src = data.image;
+                }
+    
+                /* ---------- CTA DATA ---------- */
+                document.querySelectorAll(".messenger-btn").forEach(btn => {
+                    btn.dataset.size = selectedSize || "";
+                    btn.dataset.color = selectedColor || "";
+                });
             });
-
-            document.querySelectorAll(".color-btn").forEach(btn => {
-                const val = btn.dataset.color;
-                btn.disabled = !data.colors.includes(val);
-                btn.classList.toggle("bg-gray-800", val === selectedColor);
-                btn.classList.toggle("text-white", val === selectedColor);
-            });
-
-            if (data.image) document.getElementById("variant-image").src = data.image;
+    }
+    
+    /* ---------- SIZE CLICK ---------- */
+    document.querySelectorAll(".size-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const clicked = this.dataset.size;
+    
+            // Toggle logic
+            selectedSize = (selectedSize === clicked) ? null : clicked;
+    
+            updateVariant();
         });
-}
-
-document.querySelectorAll(".size-btn").forEach(btn => {
-    btn.addEventListener("click", function () {
-        const clicked = this.dataset.size;
-        selectedSize = (selectedSize === clicked ? null : clicked);
-        updateVariant();
     });
-});
-
-document.querySelectorAll(".color-btn").forEach(btn => {
-    btn.addEventListener("click", function () {
-        const clicked = this.dataset.color;
-        selectedColor = (selectedColor === clicked ? null : clicked);
-        updateVariant();
+    
+    /* ---------- COLOR CLICK ---------- */
+    document.querySelectorAll(".color-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            if (this.disabled) return;
+    
+            const clicked = this.dataset.color;
+    
+            // Toggle logic
+            selectedColor = (selectedColor === clicked) ? null : clicked;
+    
+            updateVariant();
+        });
     });
-});
-
-document.querySelectorAll(".messenger-btn").forEach(btn => {
-    btn.addEventListener("click", function() {
-
-        let product = this.dataset.product;
-        let size = this.dataset.size || "Not selected";
-        let color = this.dataset.color || "Not selected";
-        let qty = this.dataset.qty;
-
-        let message =
-`Hello, I am interested in this product:
-Product: ${product}
-Size: ${size}
-Color: ${color}
-Quantity: ${qty}`;
-
-        navigator.clipboard.writeText(message)
-            .then(() => alert("Message copied ✔\nPaste it in FB chat"));
-
-        let pageId = "61582294003145";
-        window.open(`https://www.facebook.com/messages/t/${pageId}`, "_blank");
-    });
-});
-</script>
+    </script>
+    
 
 {% endblock %}
